@@ -1,7 +1,8 @@
-IMAGE_NAME ?= causa-mcp
+IMAGE_NAME ?= quay.io/causa-ai-hub/causa-mcp
 IMAGE_TAG  ?= latest
+PLATFORMS ?= linux/amd64,linux/arm64
 
-.PHONY: build image load deploy port-forward
+.PHONY: build image image-multiarch load deploy port-forward
 
 ## Build the JAR
 build:
@@ -10,6 +11,10 @@ build:
 ## Build the container image
 image: build
 	docker build -f src/main/docker/Dockerfile.jvm -t $(IMAGE_NAME):$(IMAGE_TAG) .
+
+## Build and push a multi-arch container image
+image-multiarch: build
+	docker buildx build --platform $(PLATFORMS) -f src/main/docker/Dockerfile.jvm -t $(IMAGE_NAME):$(IMAGE_TAG) --push .
 
 ## Load the image into the Kind cluster
 load: image
